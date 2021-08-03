@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>时钟</title>
+</head>
+
+<body>
+  <canvas id="canvas" width="600" height="600"></canvas>
+  <script>
+    /**
+ * 创建时钟
+ */
+const createClock = ctx => {
+  // 设置中心点 300 300 的位置为原点 0 0
+  ctx.translate(300, 300);
+  ctx.save();
+  setInterval(() => {
+    ctx.clearRect(-150, -150, 300, 300);
+    drawClock(ctx);
+    const time = getTime();
+    drawPointers(ctx, time);
+    drawScale(ctx);
+  }, 1000);
+};
+
+const drawClock = ctx => {
+  // 画大圆
+  ctx.beginPath(); // beginPath，closePath 之间为一笔，不使用的话这的两个圆会连在一起
+  // 画圆线使用arc(中心点X,中心点Y,半径,起始角度,结束角度)
+  ctx.arc(0, 0, 100, 0, 2 * Math.PI);
+  ctx.stroke(); // 执行画线段的操作
+  ctx.closePath();
+  // 画小圆
+  ctx.beginPath();
+  ctx.arc(0, 0, 5, 0, 2 * Math.PI);
+  ctx.stroke();
+  ctx.closePath();
+};
+
+/**
+ * 画指针
+ */
+const drawPointers = (ctx, time) => {
+  const [hour, min, sec] = time;
+  const typeMap = {
+    h: {
+      rotate: ((2 * Math.PI) / 12) * (hour + min / 60) - Math.PI / 2,
+      begin: -10,
+      end: 60,
+      width: 10,
+      color: '#1D2D50'
+    },
+    m: {
+      rotate: ((2 * Math.PI) / 60) * (min + sec / 60) - Math.PI / 2,
+      begin: -10,
+      end: 70,
+      width: 5,
+      color: '#133B5C'
+    },
+    s: {
+      rotate: ((2 * Math.PI) / 60) * sec - Math.PI / 2,
+      begin: -10,
+      end: 90,
+      width: 2,
+      color: '#1E5F74'
+    }
+  };
+  const types = Object.keys(typeMap);
+  types.forEach(type => {
+    const { rotate, begin, end, width, color } = typeMap[type];
+    drawOneTouch(ctx, () => {
+      // 旋转到对应角度
+      ctx.rotate(rotate);
+      // moveTo设置画线起点
+      ctx.moveTo(begin, 0);
+      // lineTo设置画线经过点
+      ctx.lineTo(end, 0);
+      // 设置线宽
+      ctx.lineWidth = width;
+      ctx.strokeStyle = color;
+    });
+  });
+};
+
+const drawScale = ctx => {
+  for (let i = 0; i < 60; i++) {
+    drawOneTouch(ctx, () => {
+      ctx.rotate((i * (Math.PI * 2)) / 60);
+      ctx.moveTo(95, 0);
+      ctx.lineTo(100, 0);
+      ctx.lineWidth = 2;
+    });
+  }
+  for (let i = 0; i < 12; i++) {
+    drawOneTouch(ctx, () => {
+      ctx.rotate((i * (Math.PI * 2)) / 12);
+      ctx.moveTo(90, 0);
+      ctx.lineTo(100, 0);
+      ctx.lineWidth = 4;
+    });
+  }
+};
+
+const drawOneTouch = (ctx, fn) => {
+  ctx.beginPath();
+  fn();
+  ctx.stroke();
+  ctx.closePath();
+  ctx.restore();
+  ctx.save();
+};
+
+const getTime = () => {
+  const now = new Date();
+  return [now.getHours() % 12, now.getMinutes(), now.getSeconds()];
+};
+
+const canvas = document.getElementById('canvas');
+const context = canvas.getContext('2d');
+createClock(context);
+
+  </script>
+</body>
+
+</html>
