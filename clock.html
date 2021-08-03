@@ -18,13 +18,15 @@ const createClock = ctx => {
   // 设置中心点 300 300 的位置为原点 0 0
   ctx.translate(300, 300);
   ctx.save();
-  setInterval(() => {
+  const updateClock = () => {
     ctx.clearRect(-150, -150, 300, 300);
     drawClock(ctx);
     const time = getTime();
     drawPointers(ctx, time);
     drawScale(ctx);
-  }, 1000);
+    requestAnimationFrame(updateClock);
+  }
+  updateClock();
 };
 
 const drawClock = ctx => {
